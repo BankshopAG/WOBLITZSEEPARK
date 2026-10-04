@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Woblitzseepark Wesenberg — Finanzierungsrechner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#edf1ef;color:#1e2d25;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 90px}
+
+/* ── HERO ───────────────────────────────────────────────────── */
+.hero{background:#1a3028;border-radius:18px;padding:30px 32px 26px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 80% at 85% 50%,rgba(90,175,125,.18),transparent 70%)}
+.hero-inner{position:relative}
+.hero-ey{font-size:11px;color:#7ac49a;text-transform:uppercase;letter-spacing:.14em;margin-bottom:7px}
+.hero-h{font-size:24px;font-weight:300;color:#f0f7f3;font-family:Georgia,serif;margin-bottom:4px;letter-spacing:.01em}
+.hero-sub{font-size:13px;color:#8ab09a;margin-bottom:20px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{font-size:11px;padding:4px 12px;border-radius:20px;background:#243d32;color:#7ac49a;border:1px solid #3a5e48}
+
+/* ── KAUFPREIS-STRIP (die drei Kernzahlen) ─────────────────── */
+.kauf-strip{background:#fff;border:1px solid #d8e4dd;border-radius:14px;padding:0;margin-bottom:16px;overflow:hidden}
+.kauf-strip-inner{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #d8e4dd}
+@media(max-width:580px){.kauf-strip-inner{grid-template-columns:1fr}}
+.kauf-kpi{padding:20px 24px;border-right:1px solid #d8e4dd}
+.kauf-kpi:last-child{border-right:none}
+@media(max-width:580px){.kauf-kpi{border-right:none;border-bottom:1px solid #d8e4dd}}
+.kauf-kpi.highlight{background:#eaf7f1}
+.kauf-kpi-l{font-size:11px;color:#7a9688;text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px;font-weight:600}
+.kauf-kpi-v{font-size:28px;font-weight:300;color:#1e2d25;font-family:Georgia,serif;line-height:1}
+.kauf-kpi.highlight .kauf-kpi-v{color:#1e5e38}
+.kauf-kpi-sub{font-size:12px;color:#8aa898;margin-top:5px}
+.kauf-strip-bottom{padding:14px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kauf-strip-badge{font-size:11px;padding:3px 10px;border-radius:12px;background:#eaf7f1;color:#1e5e38;border:1px solid #9ed4b4}
+
+/* ── CARDS ──────────────────────────────────────────────────── */
+.card{background:#fff;border:1px solid #d8e4dd;border-radius:14px;padding:20px 24px;margin-bottom:16px}
+.sec-label{font-size:11px;color:#7a9688;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;padding-bottom:9px;border-bottom:1px solid #d8e4dd;font-weight:600}
+
+/* ── HAUS GRID ──────────────────────────────────────────────── */
+.haus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+@media(max-width:560px){.haus-grid{grid-template-columns:1fr 1fr}}
+.haus-btn{border:2px solid #d8e4dd;border-radius:10px;padding:10px 12px;cursor:pointer;background:#f5f9f7;transition:all .15s;text-align:left}
+.haus-btn:hover{border-color:#4a9e6e;background:#f0f9f4}
+.haus-btn.active{border-color:#2e7d52;background:#eaf7f1}
+.haus-btn.active .haus-btn-nr{color:#2e7d52}
+.haus-btn.sold{opacity:.42;cursor:not-allowed!important}
+.haus-btn.sold:hover{border-color:#d8e4dd;background:#f5f9f7}
+.haus-btn.reserved{opacity:.78}
+.haus-btn-tag{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#7a9688;margin-bottom:3px}
+.haus-btn-nr{font-size:15px;font-weight:700;color:#1e2d25}
+.haus-btn-preis{font-size:12px;color:#2e7d52;font-weight:500;margin-top:2px}
+.haus-btn-status{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;margin-top:3px;background:#ffe8e8;color:#a83232}
+
+.price-detail{background:#f0f9f4;border-radius:10px;padding:14px 18px;margin-top:6px}
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #d8ead2;font-size:13px}
+.price-row:last-child{border:none}
+.pl{color:#5a7a68}.pl.b{color:#1e2d25;font-weight:600}
+.pv{color:#1e2d25}.pv.b{font-weight:700;color:#2e7d52;font-size:14px}
+
+/* ── STATUS MANAGER ─────────────────────────────────────────── */
+.status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid #d8e4dd}
+.status-bar-text{font-size:12px;color:#8aa898;flex:1}
+.status-bar-btn{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid #2e7d52;background:#eaf7f1;color:#1e5e38;cursor:pointer}
+.status-bar-btn:hover{background:#d4f0e2}
+.status-panel{display:none;margin-top:14px;background:#f5f9f7;border-radius:10px;padding:16px 18px}
+.status-haus-list{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+@media(max-width:560px){.status-haus-list{grid-template-columns:1fr 1fr}}
+.status-item{background:#fff;border:1px solid #d0ddd8;border-radius:8px;padding:8px 10px}
+.status-item-nr{font-size:13px;font-weight:600;color:#1e2d25;margin-bottom:3px}
+.status-item-typ{font-size:10px;color:#8aa898;margin-bottom:6px}
+.status-btns{display:flex;gap:4px;flex-wrap:wrap}
+.sbtn{font-size:10px;padding:3px 8px;border-radius:12px;border:1px solid #d0ddd8;background:#f5f9f7;color:#5a7a68;cursor:pointer;transition:all .12s;white-space:nowrap}
+.sbtn:hover{border-color:#2e7d52;color:#1e5e38}
+.sbtn.active-v{background:#eaf7f1;border-color:#2e7d52;color:#1e5e38;font-weight:600}
+.sbtn.active-r{background:#fff3e0;border-color:#d4900a;color:#a06800;font-weight:600}
+.sbtn.active-s{background:#ffe8e8;border-color:#c0392b;color:#a83232;font-weight:600}
+.status-unlock{display:none;margin-top:12px}
+.status-pw-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ── VERANLAGUNG ────────────────────────────────────────────── */
+.vera-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:500px){.vera-grid{grid-template-columns:1fr}}
+.vera-group label{display:block;font-size:11px;color:#7a9688;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-weight:600}
+.vera-select{width:100%;font-size:13px;padding:9px 11px;border:1.5px solid #d0ddd8;border-radius:9px;background:#fff;color:#1e2d25;outline:none;cursor:pointer}
+.vera-select:focus{border-color:#2e7d52;box-shadow:0 0 0 3px rgba(46,125,82,.1)}
+.vera-result{display:flex;align-items:center;gap:10px;background:#eaf7f1;border:1px solid #9ed4b4;border-radius:10px;padding:10px 16px;margin-top:2px}
+.vera-result-label{font-size:12px;color:#5a9a70;flex:1}
+.vera-result-gst{font-size:20px;font-weight:700;color:#1e5e38;font-family:Georgia,serif}
+
+/* ── SLIDERS ────────────────────────────────────────────────── */
+.slider-wrap{margin-bottom:16px}
+.slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.slider-lbl{font-size:13px;color:#5a7a68}
+.slider-val{font-size:17px;font-weight:600;color:#1e2d25}
+.slider-hint{font-size:11px;color:#8aa898;margin-top:1px;text-align:right}
+input[type=range]{width:100%;height:5px;appearance:none;-webkit-appearance:none;background:#d0e4da;border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#2e7d52;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#2e7d52;border:2px solid #fff}
+#wert-rate::-webkit-slider-thumb{width:16px;height:16px}
+#wert-rate::-moz-range-thumb{width:16px;height:16px}
+
+/* ── NETTO-BELASTUNG BOX ────────────────────────────────────── */
+.nb-box{border-radius:14px;padding:22px 26px;margin-bottom:16px;border:2px solid #2e7d52;background:#eaf7f1}
+.nb-box-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:18px}
+.nb-box-label{font-size:11px;color:#4a8a65;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px}
+.nb-box-v{font-size:48px;font-weight:300;color:#1a4a2e;font-family:Georgia,serif;line-height:1}
+.nb-box-sub{font-size:13px;color:#5a8a6a;margin-top:6px;line-height:1.5}
+.nb-box-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:540px){.nb-box-breakdown{grid-template-columns:1fr 1fr}}
+.nb-mini{background:#fff;border-radius:9px;padding:12px 14px;border:1px solid #c0daca}
+.nb-mini-l{font-size:10px;color:#5a8a6a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;font-weight:600}
+.nb-mini-v{font-size:15px;font-weight:700;color:#1e2d25}
+
+/* ── DETAILS ROWS ───────────────────────────────────────────── */
+.row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #d8e4dd;font-size:13px}
+.row:last-child{border:none}
+.rl{color:#4a6a58}.rl.b{color:#1e2d25;font-weight:600}.rl.i{padding-left:14px;font-size:12px}
+.rv{color:#1e2d25;font-weight:500}.rv.pos{color:#1d9e75}.rv.neg{color:#a83232}.rv.b{font-weight:700}
+.divider{height:1px;background:#d8e4dd;margin:10px 0 12px}
+
+/* ── FINANZIERUNGSDETAILS ───────────────────────────────────── */
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:540px){.fin-grid{grid-template-columns:1fr}}
+.fin-col-label{font-size:10px;color:#7a9688;text-transform:uppercase;letter-spacing:.09em;font-weight:700;margin-bottom:10px}
+
+/* ── LIQUIDITÄTSRECHNER (simpel) ────────────────────────────── */
+.liq-card{background:#fff;border:1px solid #d8e4dd;border-radius:14px;padding:20px 24px;margin-bottom:16px}
+/* Gleichungs-Zeilen */
+.eq-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid #eef2f0}
+.eq-row:last-child{border:none}
+.eq-op{width:24px;text-align:center;font-size:20px;font-weight:300;flex-shrink:0;line-height:1}
+.eq-body{flex:1}
+.eq-label{font-size:13px;color:#4a6a58}
+.eq-sub{font-size:11px;color:#9aada2;margin-top:2px}
+.eq-val{font-size:18px;font-weight:600;color:#1e2d25;text-align:right;white-space:nowrap}
+.eq-val.neg{color:#c0392b}
+.eq-val.pos{color:#1d9e75}
+/* Trennlinie */
+.eq-divider{height:2px;background:linear-gradient(90deg,#d8e4dd,#e8f0ec);margin:4px 0 2px;border-radius:1px}
+/* Ergebnis-Zeile */
+.eq-result{display:flex;align-items:center;gap:14px;background:#1a3028;border-radius:10px;padding:16px 18px;margin-top:8px}
+.eq-result-label{flex:1}
+.eq-result-title{font-size:12px;color:#7ac49a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.eq-result-sub{font-size:11px;color:#4a8060}
+.eq-result-val{font-size:26px;font-weight:300;font-family:Georgia,serif;white-space:nowrap}
+.eq-result-val.pos{color:#5de09a}
+.eq-result-val.neg{color:#f87171}
+/* Details-Klapper */
+.liq-details-toggle{font-size:11px;color:#2e7d52;cursor:pointer;margin-top:10px;display:inline-flex;align-items:center;gap:4px;background:none;border:none;padding:0}
+.liq-details-toggle:hover{text-decoration:underline}
+.liq-details{display:none;margin-top:10px;background:#f5f9f7;border-radius:10px;padding:14px 16px}
+.liq-details.open{display:block}
+.liq-d-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e4ede8;color:#5a7a68}
+.liq-d-row:last-child{border:none}
+.liq-d-row.b{font-weight:600;color:#1e2d25}
+.liq-d-row span:last-child{text-align:right;color:#1e2d25;font-weight:500}
+.liq-note{font-size:11px;color:#8aa898;margin-top:10px;line-height:1.6;padding-top:10px;border-top:1px solid #eef2f0}
+
+/* ── KREDIT TIMELINE ────────────────────────────────────────── */
+.kt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:520px){.kt-grid{grid-template-columns:1fr}}
+.kt-card{border-radius:11px;padding:14px 16px;border:1px solid #d8e4dd;background:#f5f9f7}
+.kt-year{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a9688;margin-bottom:10px}
+.kt-item{margin-bottom:10px}.kt-item:last-child{margin-bottom:0}
+.kt-lbl{font-size:10px;color:#8aa898;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.kt-val{font-size:15px;font-weight:700;margin-bottom:4px}
+.kt-bar-track{height:5px;border-radius:3px;background:#d0e4da;overflow:hidden}
+.kt-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+
+/* ── WERTSTEIGERUNG ─────────────────────────────────────────── */
+.wert-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+
+/* ── SZENARIEN ──────────────────────────────────────────────── */
+.sz-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:500px){.sz-grid{grid-template-columns:1fr}}
+.sz-c{background:#f5f9f7;border-radius:10px;padding:16px;border-top:3px solid transparent}
+
+/* ── ADVISOR ────────────────────────────────────────────────── */
+.advisor-duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:600px){.advisor-duo{grid-template-columns:1fr}}
+.advisor-card{background:#fff;border:1px solid #d8e4dd;border-radius:14px;padding:22px 24px}
+.advisor-card.primary{border-color:#2e7d52;border-width:2px}
+.adv-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid #d8e4dd;color:#7a9688}
+.adv-type.green{color:#2e7d52;border-color:#9ed4b4}
+.adv-avatar{width:48px;height:48px;border-radius:50%;background:#eaf7f1;border:2px solid #2e7d52;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#1e5e38;flex-shrink:0;font-family:Georgia,serif}
+.adv-avatar.blue{background:#eef2ff;border-color:#6b83d4;color:#3a52b4}
+.adv-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.adv-name{font-size:16px;font-weight:600;color:#1e2d25}
+.adv-role{font-size:12px;color:#8aa898;margin-top:2px}
+.adv-contact a{display:flex;align-items:center;gap:9px;font-size:13px;color:#1e2d25;text-decoration:none;padding:6px 0;border-bottom:1px solid #f0f4f2}
+.adv-contact a:last-child{border:none}
+.adv-contact a:hover{color:#2e7d52}
+.adv-ico{font-size:15px;color:#2e7d52;width:20px;text-align:center;flex-shrink:0}
+.adv-ico.blue{color:#6b83d4}
+.adv-bullets{font-size:12px;color:#8aa898;margin-top:12px;line-height:1.8}
+
+/* ── CTA ────────────────────────────────────────────────────── */
+.cta-block{background:#1a3028;border-radius:16px;padding:30px 32px;margin-bottom:16px;position:relative;overflow:hidden}
+.cta-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 100% at 90% 50%,rgba(90,175,125,.18),transparent)}
+.cta-inner{position:relative;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center}
+@media(max-width:560px){.cta-inner{grid-template-columns:1fr}}
+.cta-eyebrow{font-size:11px;color:#7ac49a;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}
+.cta-title{font-size:21px;font-weight:300;color:#f0f7f3;font-family:Georgia,serif;line-height:1.3;margin-bottom:8px}
+.cta-sub{font-size:13px;color:#8ab09a;line-height:1.6}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;background:#2e7d52;color:#fff;font-size:14px;font-weight:700;padding:15px 26px;border-radius:50px;text-decoration:none;white-space:nowrap;border:none;cursor:pointer;transition:background .15s}
+.cta-btn:hover{background:#3a9e68}
+
+/* ── STICKY BAR ─────────────────────────────────────────────── */
+.sticky-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:999;
+  background:#1a3028;
+  border-top:1px solid #2e5040;
+  box-shadow:0 -4px 24px rgba(0,0,0,.28);
+  padding:0;
+}
+.sticky-bar-inner{
+  max-width:860px;margin:0 auto;
+  display:grid;grid-template-columns:auto 1fr 1fr 1fr;
+  align-items:stretch;
+}
+@media(max-width:640px){
+  .sticky-bar-inner{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+  .sticky-bar-obj{grid-column:1/-1;border-bottom:1px solid #2e5040;border-right:none!important}
+}
+.sticky-bar-obj{
+  padding:10px 18px;
+  border-right:1px solid #2e5040;
+  display:flex;flex-direction:column;justify-content:center;
+  min-width:120px;
+}
+.sticky-bar-obj-tag{font-size:10px;color:#5a9070;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+.sticky-bar-obj-val{font-size:15px;font-weight:700;color:#f0f7f3;font-family:Georgia,serif}
+.sticky-kpi{padding:10px 16px;border-right:1px solid #2e5040;display:flex;flex-direction:column;justify-content:center}
+.sticky-kpi:last-child{border-right:none}
+.sticky-kpi-l{font-size:10px;color:#5a9070;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.sticky-kpi-v{font-size:17px;font-weight:300;color:#d0ead8;font-family:Georgia,serif;line-height:1}
+.sticky-kpi.accent .sticky-kpi-v{font-size:20px;font-weight:600;color:#5de09a}
+.sticky-kpi.accent-red .sticky-kpi-v{font-size:20px;font-weight:600;color:#f87171}
+
+/* ── FOOTER ─────────────────────────────────────────────────── */
+.legal-hint{background:#fff;border:1px solid #d8e4dd;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:11px;color:#8aa898;line-height:1.7}
+.legal-hint strong{color:#5a7a68}
+.footer-legal{background:#fff;border:1px solid #d8e4dd;border-radius:14px;padding:22px 24px;margin-bottom:16px;font-size:11px;color:#8aa898;line-height:1.8}
+.footer-legal h4{font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;letter-spacing:.09em;margin:16px 0 6px}
+.footer-legal h4:first-child{margin-top:0}
+.footer-legal a{color:#2e7d52;text-decoration:none}
+.footer-legal a:hover{text-decoration:underline}
+.footer-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:520px){.footer-cols{grid-template-columns:1fr}}
+.footer-divider{height:1px;background:#d8e4dd;margin:14px 0}
+.note{font-size:11px;color:#8aa898;line-height:1.7}
+.edit-input{width:100%;font-size:13px;padding:8px 12px;border:1.5px solid #d0ddd8;border-radius:8px;background:#fff;color:#1e2d25;outline:none}
+.edit-input:focus{border-color:#2e7d52;box-shadow:0 0 0 3px rgba(46,125,82,.1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-ey">Woblitzseepark · Wesenberg · Mecklenburgische Seenplatte</div>
+    <div class="hero-h">Ferienimmobilie als Kapitalanlage — Finanzierungsrechner</div>
+    <div class="hero-sub">Einheit wählen · Parameter einstellen · monatliche Belastung berechnen</div>
+    <div class="badges">
+      <span class="badge">KfW EH40 · AfA 4 % / 25 J.</span>
+      <span class="badge">Direkt am Woblitzsee</span>
+      <span class="badge">Eigennutzung möglich</span>
+      <span class="badge">Über 750 Banken</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HAUS-SELEKTOR ═════════════════════════════════════════ -->
+<div class="card">
+  <div class="sec-label">Einheit auswählen — 1. Bauabschnitt</div>
+  <div class="haus-grid" id="haus-grid"></div>
+  <div class="price-detail">
+    <div class="price-row"><span class="pl">Grundstückspreis</span><span class="pv" id="d-gst">—</span></div>
+    <div class="price-row"><span class="pl">Hauspreis netto</span><span class="pv" id="d-hp">—</span></div>
+    <div class="price-row"><span class="pl">Außenanlage</span><span class="pv" id="d-aa">—</span></div>
+    <div class="price-row"><span class="pl">Einrichtung &amp; Küche</span><span class="pv" id="d-ek">—</span></div>
+    <div class="price-row"><span class="pl">Nebenkosten (ca. 8,5 %)</span><span class="pv" id="d-nbk">—</span></div>
+    <div class="price-row"><span class="pl b">Gesamtinvestition</span><span class="pv b" id="d-ges">—</span></div>
+  </div>
+  <!-- Status-Verwaltung -->
+  <div class="status-bar">
+    <span style="font-size:18px" id="sm-icon">🔒</span>
+    <span class="status-bar-text" id="sm-text">Verfügbarkeits-Verwaltung gesperrt.</span>
+    <button class="status-bar-btn" id="sm-btn" onclick="smToggle()">🔓 Entsperren</button>
+  </div>
+  <div class="status-unlock" id="sm-unlock">
+    <div class="status-pw-row">
+      <span style="font-size:13px;color:#5a7a68">🔑 Verwaltungs-Passwort:</span>
+      <input class="edit-input" id="sm-pw-inp" type="password" placeholder="Passwort" style="width:190px">
+      <button onclick="smDoUnlock()" style="background:#1a3028;color:#7ac49a;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Entsperren</button>
+      <button onclick="smCancelUnlock()" style="background:#eef2f0;color:#5a7a68;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer">Abbrechen</button>
+      <span id="sm-pw-err" style="font-size:12px;color:#a83232;display:none">Falsches Passwort.</span>
+    </div>
+  </div>
+  <div class="status-panel" id="sm-panel">
+    <div style="font-size:11px;color:#7a9688;text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px;font-weight:600">Verfügbarkeit je Einheit — sofort gespeichert</div>
+    <div class="status-haus-list" id="sm-list"></div>
+    <div style="display:flex;gap:10px;align-items:center;padding-top:12px;border-top:1px solid #d0e4da;flex-wrap:wrap">
+      <div style="flex:1">
+        <div style="font-size:11px;color:#7a9688;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Verwaltungs-Passwort setzen / ändern</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input class="edit-input" id="sm-new-pw" type="password" placeholder="Neues Passwort" style="width:155px">
+          <input class="edit-input" id="sm-new-pw2" type="password" placeholder="Bestätigen" style="width:155px">
+          <button onclick="smChangePw()" style="background:#1a3028;color:#7ac49a;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">💾 Speichern</button>
+        </div>
+        <div id="sm-pw-hint" style="font-size:11px;color:#a83232;margin-top:4px;display:none"></div>
+        <div id="sm-pw-ok" style="font-size:11px;color:#1d9e75;margin-top:4px;display:none">✔ Passwort gespeichert.</div>
+      </div>
+      <button onclick="smLock()" style="background:#f5f9f7;color:#5a7a68;border:1px solid #d0ddd8;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;align-self:flex-end">🔒 Sperren</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DIE DREI KERNZAHLEN ════════════════════════════════════ -->
+<div class="kauf-strip">
+  <div class="kauf-strip-inner">
+    <div class="kauf-kpi">
+      <div class="kauf-kpi-l">Kaufpreis gesamt</div>
+      <div class="kauf-kpi-v" id="strip-preis">—</div>
+      <div class="kauf-kpi-sub" id="strip-preis-sub">inkl. Nebenkosten</div>
+    </div>
+    <div class="kauf-kpi">
+      <div class="kauf-kpi-l">Eigenkapital</div>
+      <div class="kauf-kpi-v" id="strip-ek">—</div>
+      <div class="kauf-kpi-sub" id="strip-ek-sub">— % des Kaufpreises</div>
+    </div>
+    <div class="kauf-kpi highlight">
+      <div class="kauf-kpi-l">Netto-Belastung / Monat</div>
+      <div class="kauf-kpi-v" id="strip-nb">—</div>
+      <div class="kauf-kpi-sub">nach Steuern &amp; Mieteinnahmen</div>
+    </div>
+  </div>
+  <div class="kauf-strip-bottom">
+    <span class="kauf-strip-badge" id="strip-rate-badge">— Rate / Mo. gesamt</span>
+    <span class="kauf-strip-badge" id="strip-miete-badge">— Mieteinnahmen / Mo.</span>
+    <span class="kauf-strip-badge" id="strip-steff-badge">— Steuerersparnis / Mo.</span>
+  </div>
+</div>
+
+<!-- ══ FINANZIERUNGSPARAMETER ════════════════════════════════ -->
+<div class="card">
+  <div class="sec-label">Finanzierungsparameter</div>
+  <div class="slider-wrap">
+    <div class="slider-top">
+      <span class="slider-lbl">Eigenkapital-Anteil</span>
+      <div><div class="slider-val" id="v-ek">29 %</div><div class="slider-hint" id="v-ek-eur">= — €</div></div>
+    </div>
+    <input type="range" id="ekpct" min="10" max="60" step="1" value="29">
+  </div>
+  <div class="slider-wrap">
+    <div class="slider-top">
+      <span class="slider-lbl">Sollzins Bankdarlehen</span>
+      <div><div class="slider-val" id="v-zins">4,90 %</div></div>
+    </div>
+    <input type="range" id="zins" min="2.0" max="7.0" step="0.1" value="4.9">
+  </div>
+  <div class="slider-wrap">
+    <div class="slider-top">
+      <span class="slider-lbl">Anfangstilgung</span>
+      <div><div class="slider-val" id="v-tilg">1,50 %</div><div class="slider-hint" id="v-tilg-hint">Volltilgung in ca. — Jahren</div></div>
+    </div>
+    <input type="range" id="tilgung" min="0.5" max="5" step="0.25" value="1.5">
+  </div>
+  <div class="slider-wrap" style="margin-bottom:0">
+    <div class="slider-top">
+      <span class="slider-lbl">Mieteinnahmen (netto, p.a. — Prognose)</span>
+      <div><div class="slider-val" id="v-miete">—</div><div class="slider-hint" id="v-miete-hint">≈ 40 % Auslastung</div></div>
+    </div>
+    <input type="range" id="miete" min="8000" max="40000" step="500" value="14000">
+  </div>
+</div>
+
+<!-- ══ STEUERLICHE VERANLAGUNG ════════════════════════════════ -->
+<div class="card">
+  <div class="sec-label">Steuerliche Veranlagung</div>
+  <div class="vera-grid">
+    <div class="vera-group">
+      <label for="veranlagung">Veranlagungsart</label>
+      <select class="vera-select" id="veranlagung">
+        <option value="grund" selected>👤 Einzelveranlagung (Grundtarif)</option>
+        <option value="split">👥 Zusammenveranlagung (Splitting)</option>
+      </select>
+    </div>
+    <div class="vera-group">
+      <label for="kinder">Kinderfreibeträge</label>
+      <select class="vera-select" id="kinder">
+        <option value="0" selected>— Keine Kinder</option>
+        <option value="0.5">👶 0,5 — 1 Kind (alleinstehend)</option>
+        <option value="1">👶 1,0 — 1 Kind (zusammen veranlagt)</option>
+        <option value="1.5">👶👶 1,5 — 2 Kinder (alleinstehend)</option>
+        <option value="2">👶👶 2,0 — 2 Kinder (zusammen)</option>
+        <option value="2.5">👶👶👶 2,5 — 3 Kinder (alleinstehend)</option>
+        <option value="3">👶👶👶 3,0 — 3 Kinder (zusammen)</option>
+        <option value="4">👶👶👶👶 4,0 — 4 Kinder (zusammen)</option>
+      </select>
+    </div>
+  </div>
+  <div class="slider-wrap" style="margin-bottom:14px">
+    <div class="slider-top">
+      <span class="slider-lbl">Zu versteuerndes Jahreseinkommen (gesamt)</span>
+      <div><div class="slider-val" id="v-ein">80.000 €</div></div>
+    </div>
+    <input type="range" id="einkommen" min="20000" max="400000" step="5000" value="80000">
+  </div>
+  <div class="vera-result">
+    <div class="vera-result-label" id="vera-label">Grundtarif · Keine Kinder · Grenzsteuersatz:</div>
+    <div class="vera-result-gst" id="vera-gst">—</div>
+  </div>
+  <div style="font-size:11px;color:#8aa898;margin-top:10px;line-height:1.6">Splitting halbiert das zvE, berechnet die Steuer und verdoppelt sie. Kinderfreibetrag 2026: je 9.312 € p.a.</div>
+</div>
+
+<!-- ══ MONATLICHE LIQUIDITÄTSRECHNUNG ════════════════════════ -->
+<div class="liq-card">
+  <div class="sec-label">Was zahle ich monatlich? — in drei Schritten</div>
+
+  <div class="eq-row">
+    <div class="eq-op" style="color:#c0392b">−</div>
+    <div class="eq-body">
+      <div class="eq-label">Monatsraten &amp; Kosten</div>
+      <div class="eq-sub">KfW + Bankdarlehen + Bewirtschaftung</div>
+    </div>
+    <div class="eq-val neg" id="eq-aus">—</div>
+  </div>
+
+  <div class="eq-row">
+    <div class="eq-op" style="color:#1d9e75">+</div>
+    <div class="eq-body">
+      <div class="eq-label">Mieteinnahmen netto / Mo.</div>
+      <div class="eq-sub">nach Verwaltung (20 %) und Betriebskosten</div>
+    </div>
+    <div class="eq-val pos" id="eq-mmo">—</div>
+  </div>
+
+  <div class="eq-row">
+    <div class="eq-op" style="color:#1d9e75">+</div>
+    <div class="eq-body">
+      <div class="eq-label">Steuerersparnis / Mo.</div>
+      <div class="eq-sub">AfA + Zinsen senken Ihr zvE → Finanzamt erstattet</div>
+    </div>
+    <div class="eq-val pos" id="eq-steff">—</div>
+  </div>
+
+  <div class="eq-divider"></div>
+
+  <div class="eq-result">
+    <div class="eq-result-label">
+      <div class="eq-result-title">Ihr monatlicher Eigenanteil</div>
+      <div class="eq-result-sub" id="eq-result-sub">nach Steuern &amp; Mieteinnahmen</div>
+    </div>
+    <div class="eq-result-val" id="eq-result">—</div>
+  </div>
+
+  <button class="liq-details-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Details ausblenden':'▶ Details zur Steuerberechnung'">▶ Details zur Steuerberechnung</button>
+  <div class="liq-details">
+    <div class="liq-d-row"><span>KfW-Rate / Mo.</span><span id="ld-kfw">—</span></div>
+    <div class="liq-d-row"><span>Bankdarlehen-Rate / Mo.</span><span id="ld-bank">—</span></div>
+    <div class="liq-d-row"><span>Mieteinnahmen p.a. (brutto)</span><span id="ld-miete">—</span></div>
+    <div class="liq-d-row"><span>− Verwaltungsgebühr 20 %</span><span id="ld-mgmt">—</span></div>
+    <div class="liq-d-row"><span>− Betriebskosten (pauschal p.a.)</span><span id="ld-bk">— 1.800 €</span></div>
+    <div class="liq-d-row b"><span>= Netto-Mieteinnahmen p.a.</span><span id="ld-nm">—</span></div>
+    <div class="liq-d-row" style="border-top:2px solid #e4ede8;margin-top:4px;padding-top:8px"><span>AfA Gebäude + Außenanlagen (4 %)</span><span id="ld-afag">—</span></div>
+    <div class="liq-d-row"><span>AfA Einrichtung / Küche (6 J.)</span><span id="ld-afam">—</span></div>
+    <div class="liq-d-row"><span>Schuldzinsen absetzbar p.a.</span><span id="ld-zins">—</span></div>
+    <div class="liq-d-row b"><span>Einkünfte V&amp;V (steuerlich)</span><span id="ld-vv">—</span></div>
+    <div class="liq-d-row b"><span>Steuereffekt p.a. (Grenzsteuersatz <span id="ld-gst">—</span>)</span><span id="ld-steff">—</span></div>
+  </div>
+
+  <div class="liq-note">Steuerberechnung ohne SolZ und KiSt. Individuelle Beratung durch Steuerberater empfohlen.</div>
+</div>
+
+<!-- ══ FINANZIERUNGSSTRUKTUR (kompakt) ═══════════════════════ -->
+<div class="card">
+  <div class="sec-label">Finanzierungsstruktur</div>
+  <div class="fin-grid">
+    <div>
+      <div class="fin-col-label">Kapitalstruktur</div>
+      <div class="row"><span class="rl">Gesamtinvestition</span><span class="rv b" id="fi-ges">—</span></div>
+      <div class="row"><span class="rl i">davon Eigenkapital</span><span class="rv pos" id="fi-ek">—</span></div>
+      <div class="row"><span class="rl i">KfW-Darlehen (2,49 % | 1,8 %)</span><span class="rv neg">− 100.000 €</span></div>
+      <div class="row"><span class="rl i">Bankdarlehen</span><span class="rv neg" id="fi-bank">—</span></div>
+    </div>
+    <div>
+      <div class="fin-col-label">Monatliche Ausgaben</div>
+      <div class="row"><span class="rl">KfW-Rate / Mo.</span><span class="rv" id="fi-kfw-rate">—</span></div>
+      <div class="row"><span class="rl">Bank-Rate / Mo.</span><span class="rv" id="fi-bank-rate">—</span></div>
+      <div class="row"><span class="rl">Nebenkosten / Mo.</span><span class="rv">120 €</span></div>
+      <div class="row"><span class="rl b">Ausgaben gesamt / Mo.</span><span class="rv b" id="fi-aus">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KREDITENTWICKLUNG 10 / 20 / 30 J. ════════════════════ -->
+<div class="card">
+  <div class="sec-label">Kreditentwicklung &amp; Immobilienwert</div>
+  <!-- Wertsteigerung-Slider -->
+  <div style="margin-bottom:16px">
+    <div class="wert-row">
+      <span style="font-size:13px;color:#5a7a68">Angenommene Wertsteigerung p.a.</span>
+      <span style="font-size:17px;font-weight:600;color:#1e2d25" id="v-wert">2,0 %</span>
+    </div>
+    <input type="range" id="wert-rate" min="0" max="5" step="0.1" value="2.0">
+    <div style="font-size:11px;color:#8aa898;margin-top:5px">§ 23 EStG: Veräußerungsgewinn nach 10 Jahren steuerfrei.</div>
+  </div>
+  <div class="kt-grid">
+    <div class="kt-card">
+      <div class="kt-year">📅 Nach 10 Jahren</div>
+      <div class="kt-item">
+        <div class="kt-lbl">Restschuld</div>
+        <div class="kt-val" id="kt10-rs" style="color:#a83232">—</div>
+        <div class="kt-bar-track"><div class="kt-bar-fill" id="kt10-bar" style="background:#a83232;width:80%"></div></div>
+      </div>
+      <div class="kt-item">
+        <div class="kt-lbl">Immobilienwert</div>
+        <div class="kt-val" id="kt10-wert" style="color:#2e7d52">—</div>
+        <div class="kt-bar-track"><div class="kt-bar-fill" style="background:#2e7d52;width:100%"></div></div>
+      </div>
+    </div>
+    <div class="kt-card">
+      <div class="kt-year">📅 Nach 20 Jahren</div>
+      <div class="kt-item">
+        <div class="kt-lbl">Restschuld</div>
+        <div class="kt-val" id="kt20-rs" style="color:#a83232">—</div>
+        <div class="kt-bar-track"><div class="kt-bar-fill" id="kt20-bar" style="background:#a83232;width:55%"></div></div>
+      </div>
+      <div class="kt-item">
+        <div class="kt-lbl">Immobilienwert</div>
+        <div class="kt-val" id="kt20-wert" style="color:#2e7d52">—</div>
+        <div class="kt-bar-track"><div class="kt-bar-fill" style="background:#2e7d52;width:100%"></div></div>
+      </div>
+    </div>
+    <div class="kt-card">
+      <div class="kt-year">📅 Nach 30 Jahren</div>
+      <div class="kt-item">
+        <div class="kt-lbl">Restschuld</div>
+        <div class="kt-val" id="kt30-rs" style="color:#a83232">—</div>
+        <div class="kt-bar-track"><div class="kt-bar-fill" id="kt30-bar" style="background:#a83232;width:25%"></div></div>
+      </div>
+      <div class="kt-item">
+        <div class="kt-lbl">Immobilienwert</div>
+        <div class="kt-val" id="kt30-wert" style="color:#2e7d52">—</div>
+        <div class="kt-bar-track"><div class="kt-bar-fill" style="background:#2e7d52;width:100%"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="note">Restschuld = KfW + Bankdarlehen kombiniert · Immobilienwert auf Basis gewählter Wertsteigerung p.a.</div>
+</div>
+
+<!-- ══ SZENARIEN ═════════════════════════════════════════════ -->
+<div class="card">
+  <div class="sec-label">Szenarien — Netto-Belastung im Vergleich</div>
+  <div class="sz-grid">
+    <div class="sz-c" style="border-top-color:#a83232">
+      <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:4px">Konservativ</div>
+      <div style="font-size:11px;color:#8aa898;margin-bottom:10px;line-height:1.5">−20 % Mieteinnahmen<br>keine Wertsteigerung</div>
+      <div style="font-size:11px;color:#7a9688">Netto-Belastung / Mo.</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:4px" id="szk-n">—</div>
+      <div style="font-size:11px;color:#7a9688">Mietrendite p.a.</div>
+      <div style="font-size:14px;font-weight:600;color:#a83232" id="szk-m">—</div>
+    </div>
+    <div class="sz-c" style="border-top-color:#2e7d52">
+      <div style="font-size:12px;font-weight:700;color:#2e7d52;margin-bottom:4px">Realistisch</div>
+      <div style="font-size:11px;color:#8aa898;margin-bottom:10px;line-height:1.5">Plan-Einnahmen<br>+2,0 % Wertsteigerung</div>
+      <div style="font-size:11px;color:#7a9688">Netto-Belastung / Mo.</div>
+      <div style="font-size:17px;font-weight:700;color:#2e7d52;margin-bottom:4px" id="szr-n">—</div>
+      <div style="font-size:11px;color:#7a9688">Mietrendite p.a.</div>
+      <div style="font-size:14px;font-weight:600;color:#2e7d52" id="szr-m">—</div>
+    </div>
+    <div class="sz-c" style="border-top-color:#1d9e75">
+      <div style="font-size:12px;font-weight:700;color:#1d9e75;margin-bottom:4px">Optimistisch</div>
+      <div style="font-size:11px;color:#8aa898;margin-bottom:10px;line-height:1.5">+10 % Einnahmen<br>+2,5 % Wertsteigerung</div>
+      <div style="font-size:11px;color:#7a9688">Netto-Belastung / Mo.</div>
+      <div style="font-size:17px;font-weight:700;color:#1d9e75;margin-bottom:4px" id="szo-n">—</div>
+      <div style="font-size:11px;color:#7a9688">Mietrendite p.a.</div>
+      <div style="font-size:14px;font-weight:600;color:#1d9e75" id="szo-m">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RECHTLICHER HINWEIS ════════════════════════════════════ -->
+<div class="legal-hint">
+  <strong>⚠️ Kein verbindliches Angebot</strong> — Alle Berechnungen dienen ausschließlich der Orientierung und stellen kein verbindliches Kauf-, Miet- oder Finanzierungsangebot dar. Rendite-, Auslastungs- und Steuerprognosen können nicht garantiert werden. Steuerliche Effekte sind vereinfachte Modellberechnungen — konsultieren Sie Ihren Steuerberater. Maßgeblich sind ausschließlich notariell beurkundete Kaufvertragsunterlagen. Stand: Oktober 2026 · Woblitzpark-Wesenberg GmbH.
+</div>
+
+<!-- ══ ANSPRECHPARTNER ════════════════════════════════════════ -->
+<div class="advisor-duo">
+
+  <!-- VERKAUF: Melanie Gatz / Arnholm+Partner -->
+  <div class="advisor-card primary">
+    <div class="adv-type green">🏡 Ansprechpartner Verkauf &amp; Projekt</div>
+    <div class="adv-row">
+      <div class="adv-avatar" style="background:#fff7f0;border-color:#c8763a;color:#c8763a;font-size:13px;font-weight:800;letter-spacing:-.5px">A+P</div>
+      <div>
+        <div class="adv-name">Melanie Gatz</div>
+        <div class="adv-role">Vertriebsleitung</div>
+        <!-- Arnholm+Partner Logo -->
+        <div style="margin-top:5px;line-height:1;font-size:13px;font-family:Georgia,serif">
+          <span style="color:#c8763a;font-weight:700;letter-spacing:.01em">Arnholm</span><span style="color:#1e2d25;font-weight:700"> +Partner</span><br>
+          <span style="font-size:9px;color:#8aa898;letter-spacing:.12em;text-transform:uppercase;font-family:-apple-system,sans-serif">Consulting</span>
+        </div>
+      </div>
+    </div>
+    <div class="adv-contact">
+      <a href="tel:+491731858153">
+        <span class="adv-ico">📞</span>
+        <span>+49 (0)173 1858153</span>
+      </a>
+      <a href="mailto:gatz@arnholm-partner.de">
+        <span class="adv-ico">✉️</span>
+        <span>gatz@arnholm-partner.de</span>
+      </a>
+      <a href="https://www.arnholm-partner.de" target="_blank">
+        <span class="adv-ico">🌐</span>
+        <span>www.arnholm-partner.de</span>
+      </a>
+      <a href="https://heyzine.com/flip-book/5b5eace89b.html" target="_blank">
+        <span class="adv-ico">📄</span>
+        <span>Projektprospekt online ansehen</span>
+      </a>
+    </div>
+    <div class="adv-bullets">✔ Über 20 Jahre Projekterfahrung<br>✔ Kooperation mit Interhome &amp; Landal NL<br>✔ Vermietungsstruktur vertraglich geregelt</div>
+  </div>
+
+  <!-- FINANZIERUNG: Uwe Thielke -->
+  <div class="advisor-card">
+    <div class="adv-type">💶 Ansprechpartner Finanzierung</div>
+    <div class="adv-row">
+      <div class="adv-avatar blue">UT</div>
+      <div>
+        <div class="adv-name">Uwe Thielke</div>
+        <div class="adv-role">Baufinanzierung · CEB Bankshop AG</div>
+      </div>
+    </div>
+    <div class="adv-contact">
+      <a href="tel:+4917952827810">
+        <span class="adv-ico blue">📞</span>
+        <span>+49 (0)179 528 27 81</span>
+      </a>
+      <a href="mailto:uwe.thielke@bankshop.de">
+        <span class="adv-ico blue">✉️</span>
+        <span>uwe.thielke@bankshop.de</span>
+      </a>
+      <a href="https://www.bankshop.de" target="_blank">
+        <span class="adv-ico blue">🌐</span>
+        <span>www.bankshop.de</span>
+      </a>
+      <a href="https://www.finanzexperte.eu/link/selbstauskunft/b/242y241024kaBOHyjJM55xX05By5U6tOTf2FQ2FH6V6MrlgTpwmCOTbrlzbQc7fO" target="_blank">
+        <span class="adv-ico blue">📋</span>
+        <span>Online-Selbstauskunft ausfüllen</span>
+      </a>
+    </div>
+    <div class="adv-bullets">✔ Zugang zu über 750 Banken<br>✔ Antwort innerhalb 24 Stunden<br>✔ Keine Schufa-Anfrage beim Erstgespräch</div>
+  </div>
+
+</div>
+
+<!-- ══ CTA ════════════════════════════════════════════════════ -->
+<div class="cta-block">
+  <div class="cta-inner">
+    <div>
+      <div class="cta-eyebrow">Ihr nächster Schritt</div>
+      <div class="cta-title">In 24 Stunden zur passenden Finanzierung</div>
+      <div class="cta-sub">Jetzt Selbstauskunft ausfüllen und kostenfrei die Machbarkeit prüfen lassen — unverbindlich, diskret, mit Zugang zu über 750 Banken.</div>
+    </div>
+    <div style="text-align:center">
+      <a href="https://www.finanzexperte.eu/link/selbstauskunft/b/242y241024kaBOHyjJM55xX05By5U6tOTf2FQ2FH6V6MrlgTpwmCOTbrlzbQc7fO" class="cta-btn" target="_blank">
+        📋 Zur Selbstauskunft
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPRESSUM & DATENSCHUTZ ════════════════════════════════ -->
+<div class="footer-legal">
+  <div class="footer-cols">
+    <div>
+      <h4>Impressum — Finanzierungsberatung</h4>
+      <strong style="color:#5a7a68">CEB Bankshop AG</strong><br>
+      Stallbaumstraße 11 · 04155 Leipzig<br>
+      Tel.: 0341 / 590 84-0<br>
+      E-Mail: <a href="mailto:info@bankshop.de">info@bankshop.de</a><br>
+      Web: <a href="https://www.bankshop.de" target="_blank">www.bankshop.de</a><br><br>
+      Vorstand: Sven Thom (Vorstandsvorsitzender)<br>
+      Registergericht: Amtsgericht Leipzig · HRB 27895<br>
+      USt-IdNr.: DE 271 985 416<br>
+      Zugelassen als Kreditvermittler gem. § 34c GewO durch die BaFin.
+    </div>
+    <div>
+      <h4>Impressum — Projektvertrieb</h4>
+      <strong style="color:#5a7a68">Woblitzpark-Wesenberg GmbH</strong><br>
+      In den Wällen 77 · 17255 Wesenberg<br>
+      E-Mail: <a href="mailto:info@woblitzseepark-wesenberg.de">info@woblitzseepark-wesenberg.de</a><br>
+      Web: <a href="https://www.woblitzseepark-wesenberg.de" target="_blank">www.woblitzseepark-wesenberg.de</a>
+      <h4>Datenschutz</h4>
+      Datenschutzerklärung CEB Bankshop AG:<br>
+      <a href="https://www.bankshop.de/datenschutz" target="_blank">www.bankshop.de/datenschutz</a><br><br>
+      Dieser Rechner speichert keine personenbezogenen Daten auf externen Servern. Einstellungen (Verfügbarkeitsstatus) werden ausschließlich lokal im Browser (localStorage) gespeichert.
+    </div>
+  </div>
+  <div class="footer-divider"></div>
+  <strong style="color:#5a7a68">Haftungsausschluss:</strong> Alle Angaben in diesem Rechner sind unverbindlich und entsprechen dem Planungsstand Oktober 2026. Berechnungen dienen der Orientierung und stellen kein Angebot dar. Steuerliche Effekte sind vereinfachte Modellwerte ohne Solidaritätszuschlag und Kirchensteuer — individuelle Beratung durch einen Steuerberater ist empfohlen. Rendite- und Auslastungsprognosen basieren auf Erfahrungswerten und sind nicht garantiert. Maßgeblich sind ausschließlich die notariell beurkundeten Vertragsunterlagen. Änderungen vorbehalten.
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ══ STICKY STATUSBAR ══════════════════════════════════════ -->
+<div class="sticky-bar" id="sticky-bar">
+  <div class="sticky-bar-inner">
+    <div class="sticky-bar-obj">
+      <div class="sticky-bar-obj-tag">Einheit</div>
+      <div class="sticky-bar-obj-val" id="sb-nr">—</div>
+    </div>
+    <div class="sticky-kpi">
+      <div class="sticky-kpi-l">Gesamtpreis</div>
+      <div class="sticky-kpi-v" id="sb-preis">—</div>
+    </div>
+    <div class="sticky-kpi">
+      <div class="sticky-kpi-l">Darlehen gesamt</div>
+      <div class="sticky-kpi-v" id="sb-darlehen">—</div>
+    </div>
+    <div class="sticky-kpi">
+      <div class="sticky-kpi-l">Eigenkapital</div>
+      <div class="sticky-kpi-v" id="sb-ek">—</div>
+    </div>
+    <div class="sticky-kpi accent" id="sb-nb-wrap">
+      <div class="sticky-kpi-l">Netto-Belastung / Mo.</div>
+      <div class="sticky-kpi-v" id="sb-nb">—</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const HAEUSER=[
+  {nr:'71', flur:'4/56',typ:'W1',grund:55440,haus:333545,aa:9240,ek:28607,gesamt:426832},
+  {nr:'73', flur:'4/69',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'73a',flur:'4/68',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'75', flur:'4/67',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'75a',flur:'4/66',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'77', flur:'4/65',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'77a',flur:'4/64',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'79', flur:'4/63',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'79a',flur:'4/62',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'81', flur:'4/61',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'81a',flur:'4/60',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'83', flur:'4/59',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'83a',flur:'4/58',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'85', flur:'4/44',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'85a',flur:'4/45',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'87', flur:'4/46',typ:'W1',grund:55440,haus:333545,aa:9240,ek:28607,gesamt:426832},
+  {nr:'89', flur:'4/47',typ:'W1',grund:55440,haus:333545,aa:9240,ek:28607,gesamt:426832},
+  {nr:'91', flur:'4/48',typ:'W1',grund:55440,haus:333545,aa:9240,ek:28607,gesamt:426832},
+  {nr:'93', flur:'4/49',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'93a',flur:'4/50',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'95', flur:'4/51',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'95a',flur:'4/52',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'97', flur:'4/53',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'97a',flur:'4/54',typ:'W2',grund:49500,haus:319527,aa:9240,ek:28607,gesamt:406874},
+  {nr:'99', flur:'4/55',typ:'W1',grund:55440,haus:333545,aa:9240,ek:28607,gesamt:426832},
+];
+const DEFAULT_STATUS={'77':'verkauft','77a':'verkauft','91':'reserviert'};
+const SK_STATUS='woblitz_status',SK_SM='woblitz_sm';
+let selectedIdx=0,smUnlocked=false;
+const el=id=>document.getElementById(id);
+const fmt=v=>v.toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const fmtP=v=>v.toFixed(1).replace('.',',')+' %';
+function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++)h=(Math.imul(31,h)+pw.charCodeAt(i))|0;return h.toString(16);}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+/* STATUS */
+function loadSt(){return Object.assign({},DEFAULT_STATUS,lsGet(SK_STATUS)||{});}
+function getSt(nr){return loadSt()[nr]||'verfügbar';}
+function setSt(nr,st){const d=lsGet(SK_STATUS)||{};d[nr]=st;lsSet(SK_STATUS,d);}
+
+/* STATUS MANAGER */
+function smGetData(){return lsGet(SK_SM)||{};}
+function smIsPasswordSet(){return !!(smGetData().pwhash);}
+function smUpdateBar(){
+  if(smUnlocked){
+    el('sm-icon').textContent='🔓';
+    el('sm-text').textContent='Verwaltung entsperrt — Änderungen sofort gespeichert.';
+    el('sm-btn').textContent='🔒 Sperren'; el('sm-btn').onclick=smLock;
+    el('sm-panel').style.display='block'; el('sm-unlock').style.display='none';
+    buildSmList();
+  } else {
+    el('sm-icon').textContent='🔒';
+    el('sm-text').textContent='Verfügbarkeits-Verwaltung — nur mit Passwort änderbar.';
+    el('sm-btn').textContent='🔓 Entsperren'; el('sm-btn').onclick=smToggle;
+    el('sm-panel').style.display='none'; el('sm-unlock').style.display='none';
+  }
+}
+function smToggle(){
+  if(smUnlocked){smLock();return;}
+  if(!smIsPasswordSet()){smUnlocked=true;smUpdateBar();return;}
+  el('sm-unlock').style.display='block';
+  el('sm-pw-inp').value=''; el('sm-pw-err').style.display='none';
+  setTimeout(()=>el('sm-pw-inp').focus(),50);
+}
+function smCancelUnlock(){el('sm-unlock').style.display='none';}
+function smDoUnlock(){
+  const pw=el('sm-pw-inp').value;
+  if(!pw){el('sm-pw-err').style.display='inline';el('sm-pw-err').textContent='Passwort eingeben.';return;}
+  if(hashPw(pw)===smGetData().pwhash){smUnlocked=true;el('sm-unlock').style.display='none';smUpdateBar();}
+  else{el('sm-pw-err').style.display='inline';el('sm-pw-err').textContent='Falsches Passwort.';}
+}
+function smLock(){smUnlocked=false;smUpdateBar();}
+function smChangePw(){
+  const pw=el('sm-new-pw').value,pw2=el('sm-new-pw2').value;
+  el('sm-pw-hint').style.display='none'; el('sm-pw-ok').style.display='none';
+  if(!pw){el('sm-pw-hint').style.display='block';el('sm-pw-hint').textContent='Bitte Passwort eingeben.';return;}
+  if(pw!==pw2){el('sm-pw-hint').style.display='block';el('sm-pw-hint').textContent='Passwörter stimmen nicht überein.';return;}
+  lsSet(SK_SM,{pwhash:hashPw(pw)});
+  el('sm-new-pw').value=''; el('sm-new-pw2').value='';
+  el('sm-pw-ok').style.display='block'; setTimeout(()=>el('sm-pw-ok').style.display='none',3000);
+}
+function buildSmList(){
+  const list=el('sm-list'); list.innerHTML='';
+  HAEUSER.forEach(h=>{
+    const st=getSt(h.nr),item=document.createElement('div'); item.className='status-item';
+    item.innerHTML=`<div class="status-item-nr">Nr. ${h.nr}</div><div class="status-item-typ">Typ ${h.typ} · ${fmt(h.gesamt)}</div>
+      <div class="status-btns">
+        <button class="sbtn ${st==='verfügbar'?'active-v':''}" onclick="smSet('${h.nr}','verfügbar')">✓ Verfügbar</button>
+        <button class="sbtn ${st==='reserviert'?'active-r':''}" onclick="smSet('${h.nr}','reserviert')">⏳ Reserviert</button>
+        <button class="sbtn ${st==='verkauft'?'active-s':''}" onclick="smSet('${h.nr}','verkauft')">🔴 Verkauft</button>
+      </div>`;
+    list.appendChild(item);
+  });
+}
+function smSet(nr,st){
+  setSt(nr,st);
+  if(HAEUSER[selectedIdx].nr===nr&&st==='verkauft'){
+    const nx=HAEUSER.findIndex((h,i)=>i!==selectedIdx&&getSt(h.nr)!=='verkauft');
+    if(nx>=0)selectedIdx=nx;
+  }
+  buildGrid(); buildSmList(); render();
+}
+el('sm-pw-inp').addEventListener('keydown',e=>{if(e.key==='Enter')smDoUnlock();});
+
+/* GRID */
+function buildGrid(){
+  const grid=el('haus-grid'); grid.innerHTML='';
+  HAEUSER.forEach((h,idx)=>{
+    const st=getSt(h.nr),sold=st==='verkauft',res=st==='reserviert';
+    const btn=document.createElement('div');
+    btn.className='haus-btn'+(idx===selectedIdx?' active':'')+(sold?' sold':'')+(res?' reserved':'');
+    btn.innerHTML=`<div class="haus-btn-tag">Haus · Typ ${h.typ}</div>
+      <div class="haus-btn-nr">Nr. ${h.nr}</div>
+      <div class="haus-btn-preis">${sold?'<span style="color:#bbb;text-decoration:line-through">'+fmt(h.gesamt)+'</span>':fmt(h.gesamt)}</div>
+      ${sold?'<span class="haus-btn-status">verkauft</span>':res?'<span class="haus-btn-status" style="background:#fff3e0;color:#b76b00">reserviert</span>':''}`;
+    if(!sold)btn.onclick=()=>{selectedIdx=idx;render();};
+    grid.appendChild(btn);
+  });
+}
+
+/* STEUER */
+function grundtarif(zvE){
+  if(zvE<=11784)return 0;
+  if(zvE<=17005){const y=(zvE-11784)/1e4;return(979.18*y+1400)*y;}
+  if(zvE<=66760){const z=(zvE-17005)/1e4;return(192.59*z+2397)*z+966.53;}
+  if(zvE<=277825)return .42*zvE-10602.13;
+  return .45*zvE-18936.88;
+}
+function stBetrag(zvE,ver,kind){
+  const zvEk=Math.max(0,zvE-parseFloat(kind||0)*9312);
+  return ver==='split'?grundtarif(zvEk/2)*2:grundtarif(zvEk);
+}
+function gst(zvE,ver,kind){return(stBetrag(zvE+500,ver,kind)-stBetrag(zvE,ver,kind))/500;}
+
+/* FINANCE */
+function mrate(k,z,t){return k*(z/100/12+t/100/12);}
+function rsN(k,z,t,j){
+  let r=k; const zm=z/100/12,tm=t/100/12,rate=k*(zm+tm);
+  for(let i=0;i<j*12;i++){r-=(rate-r*zm);if(r<=0){r=0;break;}} return Math.max(0,r);
+}
+function vtJahre(z,t){
+  if(t<=0)return 999;
+  const zm=z/100/12,tm=t/100/12;
+  return zm>=tm?999:Math.ceil(Math.log(1-zm/tm)/Math.log(1+zm)*-1/12);
+}
+
+/* RENDER */
+function render(){
+  document.querySelectorAll('.haus-btn').forEach((b,i)=>b.classList.toggle('active',i===selectedIdx));
+  const h=HAEUSER[selectedIdx];
+  const GK=h.gesamt,GEB=h.haus+h.aa,EINR=h.ek,NBK=Math.round(GK*.085);
+  const zvE=parseInt(el('einkommen').value),ver=el('veranlagung').value,kind=el('kinder').value;
+  const ekPct=parseInt(el('ekpct').value),zinsB=parseFloat(el('zins').value),tilgP=parseFloat(el('tilgung').value),miete=parseInt(el('miete').value);
+  const KFW=100000,KZ=2.49,KT=1.8;
+  const GF=GK+NBK,EK=Math.round(GF*ekPct/100),BANK=Math.max(0,GF-EK-KFW);
+  const kfwR=mrate(KFW,KZ,KT),bankR=mrate(BANK,zinsB,tilgP),aus=kfwR+bankR+120;
+  const mmo=miete/12,GST=gst(zvE,ver,kind);
+  const mr=miete/GF*100;
+  const afa_g=GEB*.04,afa_m=EINR/6,afa_sh=afa_g+afa_m;
+  const mgmt=miete*.2,bk=1800,nM=miete-mgmt-bk,zJ=KFW*KZ/100+BANK*zinsB/100;
+  const vv=nM-zJ-afa_sh,steff=vv*GST*(vv<0?1:-1);
+  const lv=miete-aus*12,ln=lv+steff,nb=-ln/12;
+  const vtj=vtJahre(zinsB,tilgP),wrPctRaw=parseFloat(el('wert-rate').value),wrPct=wrPctRaw/100,adr=95;
+  const darlehen=KFW+BANK;
+  const steffMo=steff/12;
+
+  // Wertsteigungs-Slider
+  el('v-wert').textContent=wrPctRaw.toFixed(1).replace('.',',')+' %';
+
+  // Veranlagungs-Badge
+  const verL=ver==='split'?'👥 Splitting':'👤 Grundtarif';
+  const kindL=parseFloat(kind)>0?' · '+kind+' Kinderfreibetrag':'';
+  el('vera-label').textContent=verL+kindL+' · Grenzsteuersatz:';
+  el('vera-gst').textContent=fmtP(GST*100);
+
+  // Preisdetail
+  el('d-gst').textContent=fmt(h.grund); el('d-hp').textContent=fmt(h.haus);
+  el('d-aa').textContent=fmt(h.aa); el('d-ek').textContent=fmt(EINR);
+  el('d-nbk').textContent=fmt(NBK)+' (ca.)'; el('d-ges').textContent=fmt(GF);
+
+  // ── DIE DREI KERNZAHLEN ──
+  el('strip-preis').textContent=fmt(GF);
+  el('strip-preis-sub').textContent='inkl. '+fmt(NBK)+' Nebenkosten';
+  el('strip-ek').textContent=fmt(EK);
+  el('strip-ek-sub').textContent=ekPct+' % des Kaufpreises · '+fmt(BANK+KFW)+' Darlehen';
+  el('strip-nb').textContent=(nb<=0?'+ ':'')+fmt(Math.abs(nb))+' /Mo';
+  el('strip-nb').style.color=nb<=0?'#1a4a2e':'#a83232';
+  el('strip-rate-badge').textContent=fmt(aus)+' Rate / Mo. gesamt';
+  el('strip-miete-badge').textContent=fmt(mmo)+' Mieteinnahmen / Mo.';
+  el('strip-steff-badge').textContent=(steffMo>=0?'+ ':'')+fmt(Math.abs(steffMo))+' Steuereffekt / Mo.';
+
+  // Sliders display
+  el('v-ein').textContent=fmt(zvE).replace(',00','');
+  el('v-ek').textContent=ekPct+' %'; el('v-ek-eur').textContent='= '+fmt(EK);
+  el('v-zins').textContent=zinsB.toFixed(2).replace('.',',')+' %';
+  el('v-tilg').textContent=tilgP.toFixed(2).replace('.',',')+' %';
+  el('v-tilg-hint').textContent='Volltilgung in ca. '+(vtj<100?vtj:'>50')+' Jahren';
+  el('v-miete').textContent=fmt(miete);
+  el('v-miete-hint').textContent='≈ '+Math.round(miete/(adr*365)*100)+' % Auslastung (Ø '+adr+' €/Nacht)';
+
+  // ── LIQUIDITÄTSRECHNUNG (simpel) ──
+  el('eq-aus').textContent='− '+fmt(aus)+' €';
+  el('eq-mmo').textContent='+ '+fmt(Math.round(nM/12))+' €';
+  const steffMoAbs=Math.abs(steffMo);
+  el('eq-steff').textContent=(steff<0?'+ ':steff>0?'− ':'')+fmt(Math.round(steffMoAbs))+' €';
+  // Ergebnis
+  const resEl=el('eq-result');
+  if(nb<=0){
+    resEl.textContent='+ '+fmt(Math.round(Math.abs(nb)))+' € / Mo.';
+    resEl.className='eq-result-val pos';
+    el('eq-result-sub').textContent='Überschuss — die Immobilie trägt sich selbst';
+  } else {
+    resEl.textContent='− '+fmt(Math.round(nb))+' € / Mo.';
+    resEl.className='eq-result-val neg';
+    el('eq-result-sub').textContent='Ihr monatlicher Eigenanteil nach Steuern';
+  }
+  // Details
+  el('ld-kfw').textContent='− '+fmt(kfwR)+' €';
+  el('ld-bank').textContent='− '+fmt(bankR)+' €';
+  el('ld-miete').textContent='+ '+fmt(miete)+' €';
+  el('ld-mgmt').textContent='− '+fmt(Math.round(mgmt))+' €';
+  el('ld-nm').textContent='+ '+fmt(Math.round(nM))+' €';
+  el('ld-afag').textContent='− '+fmt(Math.round(afa_g))+' €';
+  el('ld-afam').textContent='− '+fmt(Math.round(afa_m))+' €';
+  el('ld-zins').textContent='− '+fmt(Math.round(zJ))+' €';
+  el('ld-vv').textContent=(vv>=0?'+ ':'')+fmt(Math.round(Math.abs(vv)))+' €'+(vv<0?' (Verlust)':'');
+  el('ld-vv').style.color=vv<0?'#1d9e75':'#c0392b';
+  el('ld-gst').textContent=fmtP(GST*100)+(ver==='split'?' Splitting':' Grundtarif');
+  el('ld-steff').textContent=(steff<0?'+ ':steff>0?'− ':'')+fmt(Math.round(Math.abs(steff)))+' €';
+
+  // Finanzierungsstruktur
+  el('fi-ges').textContent=fmt(GF); el('fi-ek').textContent=fmt(EK)+' ('+ekPct+' %)';
+  el('fi-bank').textContent='− '+fmt(BANK);
+  el('fi-kfw-rate').textContent=fmt(kfwR)+' /Mo'; el('fi-bank-rate').textContent=fmt(bankR)+' /Mo';
+  el('fi-aus').textContent=fmt(aus)+' /Mo';
+
+  // Kredit 10/20/30
+  [[10,'kt10'],[20,'kt20'],[30,'kt30']].forEach(([j,id])=>{
+    const rs=rsN(KFW,KZ,KT,j)+rsN(BANK,zinsB,tilgP,j);
+    const wj=GF*Math.pow(1+wrPct,j);
+    const pct=darlehen>0?Math.round(rs/darlehen*100):0;
+    const rsEl=el(id+'-rs');
+    if(rs>0){rsEl.textContent='− '+fmt(rs);rsEl.style.color='#a83232';}
+    else{rsEl.textContent='✓ Abbezahlt';rsEl.style.color='#1d9e75';}
+    el(id+'-wert').textContent='+ '+fmt(wj);
+    el(id+'-bar').style.width=pct+'%';
+  });
+
+  // ── STICKY BAR ──
+  el('sb-nr').textContent='Nr. '+h.nr+' · Typ '+h.typ;
+  el('sb-preis').textContent=fmt(GF);
+  el('sb-darlehen').textContent=fmt(BANK+KFW);
+  el('sb-ek').textContent=fmt(EK)+' ('+ekPct+' %)';
+  el('sb-nb').textContent=(nb<=0?'+ ':'')+fmt(Math.abs(nb))+' /Mo';
+  const nbWrap=el('sb-nb-wrap');
+  nbWrap.className='sticky-kpi '+(nb<=0?'accent':'accent-red');
+
+  // Szenarien
+  function calcSz(f){
+    const m2=miete*f,liq2=m2-aus*12;
+    const vv2=(m2*(1-.2)-bk)-zJ-afa_sh;
+    const st2=vv2*GST*(vv2<0?1:-1);
+    return{mr:m2/GF*100,nb:-(liq2+st2)/12};
+  }
+  const szK=calcSz(.8),szR=calcSz(1),szO=calcSz(1.1);
+  el('szk-n').textContent=fmt(Math.abs(szK.nb))+' /Mo'; el('szk-m').textContent=fmtP(szK.mr);
+  el('szr-n').textContent=fmt(Math.abs(szR.nb))+' /Mo'; el('szr-m').textContent=fmtP(szR.mr);
+  el('szo-n').textContent=fmt(Math.abs(szO.nb))+' /Mo'; el('szo-m').textContent=fmtP(szO.mr);
+}
+
+/* LISTENERS */
+['einkommen','ekpct','zins','tilgung','miete','wert-rate'].forEach(id=>el(id).addEventListener('input',render));
+['veranlagung','kinder'].forEach(id=>el(id).addEventListener('change',render));
+
+/* INIT */
+(function(){
+  const fa=HAEUSER.findIndex(h=>getSt(h.nr)!=='verkauft');
+  if(fa>=0)selectedIdx=fa;
+  buildGrid(); smUpdateBar(); render();
+})();
+</script>
+</body>
+</html>
